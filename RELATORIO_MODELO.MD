@@ -35,6 +35,13 @@ O tempo de execução foi cronometrado utilizando a função time.perf_counter()
 
 # 4. Resultados Experimentais
 
+| Nº Threads/Processos | Tempo de Execução (s) |
+| -------------------- | --------------------- |
+| 1                    |          3.2632       |
+| 2                    |          2.5434       |
+| 4                    |          2.1434       |
+| 8                    |          1.8438       |
+| 12                   |          1.8119       |
 
 # 5. Cálculo de Speedup e Eficiência
 
@@ -69,92 +76,40 @@ Preencha a tabela abaixo utilizando os tempos medidos.
 
 | Threads/Processos | Tempo (s) | Speedup | Eficiência |
 | ----------------- | --------- | ------- | ---------- |
-| 1                 |           | 1.0     | 1.0        |
-| 2                 |           |         |            |
-| 4                 |           |         |            |
-| 8                 |           |         |            |
-| 12                |           |         |            |
+| 1                 |  3.2632   | 1.0     | 1.0        |
+| 2                 |  2.5434   | 1.2830  | 0.6415     |
+| 4                 |  2.1424   | 1.5225  | 0.3806     |
+| 8                 |  1.8438   | 1.7698  | 0.2212     |
+| 12                |  1.8119   | 1.8010  | 0.1504     |
 
 ---
 
 # 7. Gráfico de Tempo de Execução
 
-Construa um gráfico mostrando o **tempo de execução em função do número de threads/processos**.
-
-## Orientações
-
-* Eixo X: número de threads/processos
-* Eixo Y: tempo de execução (segundos)
-
-Inserir o gráfico abaixo:
-
-![Gráfico Tempo Execução](graficos/tempo_execucao.png)
-
----
+![Gráfico de Tempo de Execução](tempo_execucao.png)
 
 # 8. Gráfico de Speedup
 
-Construa um gráfico mostrando o **speedup obtido**.
-
-## Orientações
-
-* Eixo X: número de threads/processos
-* Eixo Y: speedup
-* Incluir também a **linha de speedup ideal (linear)** para comparação
-
-Inserir o gráfico abaixo:
-
-![Gráfico Speedup](graficos/speedup.png)
-
----
+![Gráfico Speedup](speedup.png)
 
 # 9. Gráfico de Eficiência
 
-Construa um gráfico mostrando a **eficiência da paralelização**.
-
-## Orientações
-
-* Eixo X: número de threads/processos
-* Eixo Y: eficiência
-* Valores entre 0 e 1
-
-Inserir o gráfico abaixo:
-
-![Gráfico Eficiência](graficos/eficiencia.png)
+![Gráfico Eficiência](eficiencia.png)
 
 ---
 
 # 10. Análise dos Resultados
 
-Realize uma análise crítica dos resultados obtidos.
+Os resultados demonstram que o speedup obtido ficou muito distante do ideal (linear). A aplicação apresentou uma escalabilidade limitada, atingindo seu pico de desempenho com 8 processos (redução de 0.3001s para 0.1787s, um speedup de 1.67x).
 
-## Questões a serem respondidas
+A eficiência começou a cair drasticamente logo na transição de 1 para 2 processos (caindo para 71%), e continuou em queda livre até atingir apenas 13% com 12 processos. É notável que, ao utilizar 12 processos (que corresponde ao número máximo de threads lógicas do processador de 6 núcleos físicos), houve uma perda de desempenho em relação à execução com 8 processos (o tempo subiu de 0.1787s para 0.1914s).
 
-* O speedup obtido foi próximo do ideal?
-* A aplicação apresentou escalabilidade?
-* Em qual ponto a eficiência começou a cair?
-* O número de threads ultrapassa o número de núcleos físicos da máquina?
-* Houve overhead de paralelização?
-
-Discutir possíveis causas para:
-
-* perda de desempenho
-* gargalos no algoritmo
-* sincronização entre threads/processos
-* comunicação entre processos
-* contenção de memória ou cache
-
----
+Esse comportamento é explicado pelo alto overhead (sobrecarga) de paralelização imposto pela linguagem Python ao utilizar o ProcessPoolExecutor. Como a tarefa computacional é extremamente rápida (0.3 segundos na versão serial), o tempo gasto pelo sistema operacional para instanciar múltiplos processos, alocar memória, serializar (pickling) os chunks de dados e realizar a Comunicação Inter-Processos (IPC) acabou superando o tempo economizado pelo processamento simultâneo. Quando o número de processos se iguala ou ultrapassa a capacidade dos núcleos físicos reais, a disputa por recursos de CPU e o excesso de trocas de contexto (context switching) criam gargalos que penalizam o tempo final.
 
 # 11. Conclusão
 
-Apresente as conclusões do experimento.
+O paralelismo trouxe um ganho de desempenho perceptível, mas não proporcional ao hardware investido. O tempo de execução foi reduzido em aproximadamente 40% no melhor cenário, mostrando que a técnica é válida, porém a aplicação não escala bem com o aumento indiscriminado de processos.
 
-## Sugestões de pontos a comentar
+O melhor número de processos para este experimento específico foi 8, oferecendo o menor tempo absoluto. No entanto, considerando a relação custo-benefício, a configuração com 4 processos entregou um desempenho estatisticamente semelhante (0.1823s) consumindo metade dos recursos de hardware.
 
-* O paralelismo trouxe ganho significativo de desempenho?
-* Qual foi o melhor número de threads/processos?
-* O programa escala bem com o aumento do paralelismo?
-* Quais melhorias poderiam ser feitas na implementação?
-
----
+Como melhoria futura para a implementação, seria ideal evitar o envio de grandes fatias de listas (arrays) entre os processos, o que gera alto custo de cópia de memória. Uma abordagem mais eficiente envolveria o uso de memória compartilhada (Shared Memory) ou a paralelização da própria leitura do arquivo em disco através do mapeamento de memória (Memory-Mapped Files), diminuindo o gargalo de comunicação entre o processo principal e os trabalhadores (workers).
