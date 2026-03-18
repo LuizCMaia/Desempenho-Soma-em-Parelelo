@@ -1,106 +1,40 @@
 # Relatório da NOME DA ATIVIDADE
 
-**Disciplina:** 
-**Aluno(s):**
-**Turma:**
-**Professor:**
-**Data:**
+**Disciplina: Sistemas de Informação** 
+**Aluno(s): Luiz Miguel Caixêta Maia**
+**Turma: Sistemas de Informação - Noturno**
+**Professor: Rafael Marques**
+**Data: 18/03/2026**
 
 ---
 
 # 1. Descrição do Problema
 
-Descreva o problema computacional resolvido pelo programa.
-
-## Orientações para preenchimento
-
-Explique:
-
-* Qual problema foi implementado
-* Qual algoritmo foi utilizado
-* Qual o tamanho da entrada utilizada nos testes
-* Qual o objetivo da paralelização
-
-**Questões que devem ser respondidas:**
-
-* Qual é o objetivo do programa?
-* Qual o volume de dados processado?
-* Qual algoritmo foi utilizado?
-* Qual a complexidade aproximada do algoritmo?
+O problema computacional resolvido consiste na leitura, conversão de base numérica e soma de um grande volume de números binários armazenados em um arquivo de texto. Como a conversão de strings na base 2 para inteiros decimais e a sua subsequente soma é uma operação custosa para a CPU quando executada em larga escala, o objetivo primário da paralelização é reduzir o tempo total de execução.Foi utilizado um algoritmo com a abordagem de Divisão e Conquista. O conjunto total de dados (linhas do arquivo) é fatiado em partes aproximadamente iguais (chunks). Cada parte é enviada para um processo separado que realiza as conversões e calcula uma soma local simultaneamente aos demais. Ao final, a aplicação consolida (reduz) as somas locais em um único valor final. A complexidade do algoritmo é $O(N)$, onde $N$ representa o número total de linhas do arquivo.
 
 ---
 
 # 2. Ambiente Experimental
 
-Descreva o ambiente em que os experimentos foram realizados.
+| Item                        |   Descrição   |
+| Processador                 |    I5-12500   |
+| Número de núcleos           |      6/12     |
+| Memória RAM                 | 16GB 4800MHZ  |
+| Sistema Operacional         |   Windows 11  |
+| Linguagem utilizada         |    Python 3   |
+| Biblioteca de paralelização |   concurrent.futures (ProcessPoolExecutor)  |
+| Compilador / Versão         |   VSCode  |
 
-## Orientações
-
-Informar as características do hardware e software utilizados na execução dos testes.
-
-| Item                        | Descrição |
-| --------------------------- | --------- |
-| Processador                 |           |
-| Número de núcleos           |           |
-| Memória RAM                 |           |
-| Sistema Operacional         |           |
-| Linguagem utilizada         |           |
-| Biblioteca de paralelização |           |
-| Compilador / Versão         |           |
-
----
+--=
 
 # 3. Metodologia de Testes
 
-Explique como os experimentos foram conduzidos.
+Para garantir rigor nas medições, a operação de leitura em disco (I/O) foi separada da operação matemática. O arquivo inteiro é carregado para a memória RAM primariamente, garantindo que o tempo de execução medido reflita exclusivamente o processamento da CPU e a sobrecarga (overhead) da criação dos processos.
 
-## Orientações
-
-Descrever:
-
-* Como o tempo de execução foi medido
-* Quantas execuções foram realizadas
-* Se foi utilizada média dos tempos
-* Qual tamanho da entrada foi usado
-
-### Configurações testadas
-
-Os experimentos devem ser realizados nas seguintes configurações:
-
-* 1 thread/processo (versão serial)
-* 2 threads/processos
-* 4 threads/processos
-* 8 threads/processos
-* 12 threads/processos
-
-### Procedimento experimental
-
-Descrever:
-
-* Número de execuções para cada configuração
-* Forma de cálculo da média
-* Condições de execução (ex: máquina dedicada, carga do sistema, etc.)
-
----
+O tempo de execução foi cronometrado utilizando a função time.perf_counter() nativa do Python, que possui a maior resolução disponível no sistema para medir intervalos curtos. Cada configuração de paralelismo (1, 2, 4, 8 e 12 processos) foi executada 5 vezes consecutivas. O valor anotado nas tabelas subsequentes representa a média aritmética simples dessas 5 execuções. O volume de entrada utilizado consistiu em [COLOQUE O NÚMERO DE LINHAS QUE O TERMINAL IMPRIMIU] números binários.
 
 # 4. Resultados Experimentais
 
-Preencha a tabela com os **tempos médios de execução** obtidos.
-
-## Orientações
-
-* O tempo deve ser informado em **segundos**
-* Utilizar a **média das execuções**
-
-| Nº Threads/Processos | Tempo de Execução (s) |
-| -------------------- | --------------------- |
-| 1                    |                       |
-| 2                    |                       |
-| 4                    |                       |
-| 8                    |                       |
-| 12                   |                       |
-
----
 
 # 5. Cálculo de Speedup e Eficiência
 
